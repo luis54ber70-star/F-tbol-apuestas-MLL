@@ -1,7 +1,7 @@
 name: Auto-Predict Liga MX
 on:
   schedule:
-    - cron: '0 13,19,1 * * *' # 7am, 1pm, 7pm CDMX
+    - cron: '0 13,19,1 * * *'
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12', cache: 'pip'}
-      - run: pip install pandas requests scikit-learn xgboost joblib
+      - run: pip install -r requirements.txt
       - name: Run predictions
         env:
           API_KEY: ${{ secrets.API_FOOTBALL_KEY }}
@@ -21,6 +21,7 @@ jobs:
       - name: Commit predictions
         run: |
           git config user.name github-actions
-          git add predictions/
-          git diff --quiet || git commit -m "Picks auto $(date -u +'%Y-%m-%d %H:%M')"
-          git push
+          git config user.email actions@github.com
+          git add predictions/ || true
+          git diff --staged --quiet || git commit -m "Picks auto $(date -u +'%Y-%m-%d %H:%M')"
+          git push || echo "No changes to push"
