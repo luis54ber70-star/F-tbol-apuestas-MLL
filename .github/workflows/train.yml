@@ -1,25 +1,27 @@
-name: Auto-Train Model
+name: Auto-Train
 on:
   schedule:
-    - cron: '0 3 * * *'  # 3am diario, hora CDMX son 9am UTC
-  workflow_dispatch:     # Botón "Run workflow" desde el móvil
+    - cron: '0 9 * * *' # 3am CDMX
+  workflow_dispatch:
 
 jobs:
   train:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
+        with: {lfs: true}
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install pandas scikit-learn xgboost requests
-      - run: python src/train.py
-      - name: Commit model if better
+        with: {python-version: '3.12', cache: 'pip'}
+      - run: pip install pandas requests scikit-learn xgboost joblib
+      - name: Train model
+        env:
+          API_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: python src/train.py
+      - name: Commit model if changed
         run: |
           git config user.name github-actions
-          git config user.email actions@github.com
-          git add models/
-          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-retrain: nuevo modelo $(date)"
+          git add models/ data/
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-retrain $(date -u +'%Y-%m-%d')"
           git push
