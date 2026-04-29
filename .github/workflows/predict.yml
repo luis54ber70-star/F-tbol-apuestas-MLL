@@ -1,0 +1,18 @@
+name: Auto-Predict
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Cada 2h revisa si hay partidos pronto
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install pandas xgboost joblib requests
+      - run: python src/predict.py
+      - run: |
+          git config user.name github-actions
+          git add predictions/
+          git diff --quiet || git commit -m "Picks auto $(date)"
+          git push
