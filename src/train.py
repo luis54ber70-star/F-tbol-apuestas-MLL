@@ -6,15 +6,15 @@ from sklearn.metrics import log_loss
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262 # Liga MX
-SEASON = 2025 # Apertura 2025 + Clausura 2026
+TRAIN_SEASON = 2024 # Entrena con datos históricos 2024
 
 if not API_KEY:
     print("ERROR: No se encontró API_KEY. Configura API_FOOTBALL_KEY en Secrets.")
     sys.exit(1)
 
 def get_data():
-    url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={SEASON}"
-    print(f"Consultando: {url}")
+    url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={TRAIN_SEASON}"
+    print(f"Consultando season {TRAIN_SEASON}: {url}")
     r = requests.get(url, headers={"x-apisports-key": API_KEY})
     r.raise_for_status()
     data = r.json()
@@ -40,11 +40,7 @@ def get_data():
                      'gh': gh, 'ga': ga, 'result': result})
 
     if len(rows) == 0:
-        print("ERROR: La API no regresó partidos finalizados para season 2025.")
-        print("Posibles causas:")
-        print("1. API key sin permisos o límite alcanzado")
-        print("2. La season 2025 aún no tiene partidos en la API")
-        print("3. Cambia SEASON = 2024 para probar con datos del año pasado")
+        print(f"ERROR: La API no regresó partidos finalizados para season {TRAIN_SEASON}.")
         sys.exit(1)
 
     df = pd.DataFrame(rows).sort_values('date')
