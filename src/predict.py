@@ -4,19 +4,24 @@ from datetime import datetime
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262
 MODEL_PATH = 'models/xg_model.pkl'
+DATA_PATH = 'data/historico.csv'
 
-if not os.path.exists(MODEL_PATH):
+os.makedirs('predictions', exist_ok=True)
+
+if not os.path.exists(MODEL_PATH) or not os.path.exists(DATA_PATH):
     with open('predictions/hoy.md', 'w') as f:
         f.write("# Sin modelo entrenado\nCorre el workflow Train primero.")
+    print("No hay modelo o datos. Corre Train primero.")
     exit()
 
 model = joblib.load(MODEL_PATH)
-df_hist = pd.read_csv('data/historico.csv')
+df_hist = pd.read_csv(DATA_PATH)
 
 # Traer fixtures de hoy
 today = datetime.utcnow().strftime('%Y-%m-%d')
 url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season=2024&date={today}"
 r = requests.get(url, headers={"x-apisports-key": API_KEY})
+r.raise_for_status()
 fixtures = r.json()['response']
 
 def get_team_stats(team, is_home):
@@ -50,7 +55,6 @@ for f in fixtures:
     elif prob[2] > 0.52:
         picks.append(f"**{home} vs {away}** | Visitante {prob[2]*100:.1f}% | Kelly: {kelly_visit*100:.1f}% bankroll")
 
-os.makedirs('predictions', exist_ok=True)
 with open('predictions/hoy.md', 'w') as f:
     f.write(f"# Picks Liga MX - {today}\n\n")
     f.write("Modelo: XGBoost | Kelly 25% | Umbral 52%\n\n")
