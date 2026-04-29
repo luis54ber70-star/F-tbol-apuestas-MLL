@@ -2,8 +2,8 @@ name: Auto-Train
 
 on:
   schedule:
-    - cron: '0 9 * * *' # 3am CDMX = 9am UTC
-  workflow_dispatch:     # Botón "Run workflow" desde el móvil
+    - cron: '0 9 * * *'
+  workflow_dispatch:
 
 jobs:
   train:
