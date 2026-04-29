@@ -1,4 +1,4 @@
-import pandas as pd, requests, joblib, os, numpy as np
+import pandas as pd, requests, joblib, os, numpy as np, sys
 from datetime import datetime
 from xgboost import XGBClassifier
 from sklearn.model_selection import TimeSeriesSplit
@@ -6,13 +6,25 @@ from sklearn.metrics import log_loss
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262 # Liga MX
-SEASON = 2025 # 2025 = Apertura 2025 + Clausura 2026
+SEASON = 2025 # Apertura 2025 + Clausura 2026
+
+if not API_KEY:
+    print("ERROR: No se encontró API_KEY. Configura API_FOOTBALL_KEY en Secrets.")
+    sys.exit(1)
 
 def get_data():
     url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={SEASON}"
+    print(f"Consultando: {url}")
     r = requests.get(url, headers={"x-apisports-key": API_KEY})
     r.raise_for_status()
-    fixtures = r.json()['response']
+    data = r.json()
+    
+    if 'response' not in data:
+        print(f"ERROR API: {data}")
+        sys.exit(1)
+    
+    fixtures = data['response']
+    print(f"Fixtures recibidos de API: {len(fixtures)}")
 
     rows = []
     for f in fixtures:
@@ -26,6 +38,14 @@ def get_data():
         else: result = 2
         rows.append({'date': f['fixture']['date'], 'home': h, 'away': a,
                      'gh': gh, 'ga': ga, 'result': result})
+
+    if len(rows) == 0:
+        print("ERROR: La API no regresó partidos finalizados para season 2025.")
+        print("Posibles causas:")
+        print("1. API key sin permisos o límite alcanzado")
+        print("2. La season 2025 aún no tiene partidos en la API")
+        print("3. Cambia SEASON = 2024 para probar con datos del año pasado")
+        sys.exit(1)
 
     df = pd.DataFrame(rows).sort_values('date')
     df['date'] = pd.to_datetime(df['date'])
@@ -51,7 +71,7 @@ def backtest_roi(model, X, y):
     conf = np.max(probs, axis=1)
     mask = conf > 0.52
     if mask.sum() == 0: return 0
-    wins = (picks[mask] == y[mask]).sum()
+    wins = (picks == y).sum()
     bets = mask.sum()
     roi = (wins * 0.95 - (bets - wins)) / bets
     return roi
@@ -59,8 +79,8 @@ def backtest_roi(model, X, y):
 df = get_data()
 print(f"Partidos históricos encontrados: {len(df)}")
 if len(df) < 50:
-    print("No hay suficientes datos históricos. Abortando.")
-    exit()
+    print("No hay suficientes datos históricos. Se necesitan 50+ partidos.")
+    sys.exit(1)
 
 df = make_features(df)
 features = ['goal_diff_avg', 'home_gf_avg', 'home_ga_avg', 'away_gf_avg', 'away_ga_avg']
