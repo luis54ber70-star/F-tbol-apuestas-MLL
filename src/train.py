@@ -1,12 +1,12 @@
 import pandas as pd, requests, joblib, os, numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 from xgboost import XGBClassifier
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import log_loss
 
 API_KEY = os.getenv('API_KEY')
-LEAGUE_ID = 262 # Liga MX en API-Football
-SEASON = 2024
+LEAGUE_ID = 262 # Liga MX
+SEASON = 2025 # 2025 = Apertura 2025 + Clausura 2026
 
 def get_data():
     url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={SEASON}"
@@ -21,9 +21,9 @@ def get_data():
         a = f['teams']['away']['name']
         gh, ga = f['goals']['home'], f['goals']['away']
         if gh is None or ga is None: continue
-        if gh > ga: result = 1 # Local
-        elif gh == ga: result = 0 # Empate
-        else: result = 2 # Visitante
+        if gh > ga: result = 1
+        elif gh == ga: result = 0
+        else: result = 2
         rows.append({'date': f['fixture']['date'], 'home': h, 'away': a,
                      'gh': gh, 'ga': ga, 'result': result})
 
@@ -57,6 +57,7 @@ def backtest_roi(model, X, y):
     return roi
 
 df = get_data()
+print(f"Partidos históricos encontrados: {len(df)}")
 if len(df) < 50:
     print("No hay suficientes datos históricos. Abortando.")
     exit()
@@ -80,7 +81,6 @@ print(f"ROI promedio: {np.mean(rois)*100:.2f}%")
 os.makedirs('models', exist_ok=True)
 os.makedirs('data', exist_ok=True)
 
-# Guarda si ROI > 2% o si no existe modelo previo
 if np.mean(rois) > 0.02 or not os.path.exists('models/xg_model.pkl'):
     model = XGBClassifier(n_estimators=200, max_depth=3, learning_rate=0.1, random_state=42, eval_metric='mlogloss')
     model.fit(X, y)
