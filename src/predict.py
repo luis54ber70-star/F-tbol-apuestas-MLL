@@ -3,7 +3,7 @@ from datetime import datetime
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262
-PREDICT_SEASON = 2025 # Predice partidos de la season actual
+PREDICT_SEASON = 2026 # Clausura 2026. Cambia aquí si es Apertura
 MODEL_PATH = 'models/xg_model.pkl'
 DATA_PATH = 'data/historico.csv'
 
@@ -25,6 +25,7 @@ if not os.path.exists(MODEL_PATH) or not os.path.exists(DATA_PATH):
 model = joblib.load(MODEL_PATH)
 df_hist = pd.read_csv(DATA_PATH)
 
+# Liga MX Clausura 2026 usa season=2026
 url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={PREDICT_SEASON}&date={today}"
 print(f"Consultando fixtures de hoy: {url}")
 r = requests.get(url, headers={"x-apisports-key": API_KEY})
@@ -37,7 +38,7 @@ if len(fixtures) == 0:
     with open('predictions/hoy.md', 'w') as f:
         f.write(f"# Picks Liga MX - {today}\n\n")
         f.write("No hay partidos de Liga MX programados para hoy.\n")
-        f.write(f"\nModelo entrenado con season 2024: {len(df_hist)} partidos históricos.\n")
+        f.write(f"\nModelo entrenado con {len(df_hist)} partidos históricos.\n")
     print("Sin partidos hoy")
     sys.exit(0)
 
@@ -73,11 +74,11 @@ for f in fixtures:
 
 with open('predictions/hoy.md', 'w') as f:
     f.write(f"# Picks Liga MX - {today}\n\n")
-    f.write("Modelo: XGBoost entrenado con 2024 | Kelly 25% | Umbral 52%\n\n")
+    f.write("Modelo: XGBoost entrenado con datos históricos | Kelly 25% | Umbral 52%\n\n")
     if picks:
         for p in picks: f.write(f"- {p}\n")
     else:
         f.write("Sin valor detectado hoy.\n")
-    f.write(f"\n*Datos históricos: {len(df_hist)} partidos de season 2024*\n")
+    f.write(f"\n*Datos históricos: {len(df_hist)} partidos*\n")
 
 print("Predicciones generadas")
