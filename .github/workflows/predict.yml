@@ -1,7 +1,7 @@
 name: Auto-Predict Liga MX
 on:
   schedule:
-    - cron: '0 13,19,1 * * *'
+    - cron: '0 2,5 * * *' # 02:00 y 05:00 UTC = 8pm y 11pm CDMX
   workflow_dispatch:
 
 jobs:
@@ -23,5 +23,5 @@ jobs:
           git config user.name github-actions
           git config user.email actions@github.com
           git add predictions/ || true
-          git diff --staged --quiet || git commit -m "Picks auto $(date -u +'%Y-%m-%d %H:%M')"
+          git diff --staged --quiet || git commit -m "Picks auto $(TZ=America/Mexico_City date +'%Y-%m-%d %H:%M')"
           git push || echo "No changes to push"
