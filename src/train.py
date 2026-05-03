@@ -6,44 +6,45 @@ from sklearn.metrics import log_loss
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262 # Liga MX
-TRAIN_SEASON = 2024 # Entrena con datos históricos 2024
+TRAIN_SEASONS = [2024, 2025] # Apertura 2024 + Clausura 2025
 
 if not API_KEY:
-    print("ERROR: No se encontró API_KEY. Configura API_FOOTBALL_KEY en Secrets.")
+    print("ERROR: No se encontró API_KEY. Configura API_KEY en Secrets.")
     sys.exit(1)
 
 def get_data():
-    url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={TRAIN_SEASON}"
-    print(f"Consultando season {TRAIN_SEASON}: {url}")
-    r = requests.get(url, headers={"x-apisports-key": API_KEY})
-    r.raise_for_status()
-    data = r.json()
-    
-    if 'response' not in data:
-        print(f"ERROR API: {data}")
+    all_rows = []
+    for season in TRAIN_SEASONS:
+        url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={season}"
+        print(f"Consultando season {season}: {url}")
+        r = requests.get(url, headers={"x-apisports-key": API_KEY})
+        r.raise_for_status()
+        data = r.json()
+
+        if 'response' not in data:
+            print(f"ERROR API season {season}: {data}")
+            continue
+
+        fixtures = data['response']
+        print(f"Fixtures recibidos de API season {season}: {len(fixtures)}")
+
+        for f in fixtures:
+            if f['fixture']['status']['short']!= 'FT': continue
+            h = f['teams']['home']['name']
+            a = f['teams']['away']['name']
+            gh, ga = f['goals']['home'], f['goals']['away']
+            if gh is None or ga is None: continue
+            if gh > ga: result = 1
+            elif gh == ga: result = 0
+            else: result = 2
+            all_rows.append({'date': f['fixture']['date'], 'home': h, 'away': a,
+                         'gh': gh, 'ga': ga, 'result': result})
+
+    if len(all_rows) == 0:
+        print(f"ERROR: La API no regresó partidos finalizados para seasons {TRAIN_SEASONS}.")
         sys.exit(1)
-    
-    fixtures = data['response']
-    print(f"Fixtures recibidos de API: {len(fixtures)}")
 
-    rows = []
-    for f in fixtures:
-        if f['fixture']['status']['short']!= 'FT': continue
-        h = f['teams']['home']['name']
-        a = f['teams']['away']['name']
-        gh, ga = f['goals']['home'], f['goals']['away']
-        if gh is None or ga is None: continue
-        if gh > ga: result = 1
-        elif gh == ga: result = 0
-        else: result = 2
-        rows.append({'date': f['fixture']['date'], 'home': h, 'away': a,
-                     'gh': gh, 'ga': ga, 'result': result})
-
-    if len(rows) == 0:
-        print(f"ERROR: La API no regresó partidos finalizados para season {TRAIN_SEASON}.")
-        sys.exit(1)
-
-    df = pd.DataFrame(rows).sort_values('date')
+    df = pd.DataFrame(all_rows).sort_values('date')
     df['date'] = pd.to_datetime(df['date'])
     return df
 
