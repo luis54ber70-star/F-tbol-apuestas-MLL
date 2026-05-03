@@ -4,12 +4,12 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import log_loss
 
-API_KEY = os.getenv('API_KEY')
+API_KEY = os.getenv('API_FOOTBALL_KEY')
 LEAGUE_ID = 262 # Liga MX
-TRAIN_SEASONS = [2024] # Apertura 2024. Agrega 2026 después de que termine Clausura
+TRAIN_SEASONS = [2026] # SOLO Clausura 2026
 
 if not API_KEY:
-    print("ERROR: No se encontró API_KEY. Configura API_KEY en Secrets.")
+    print("ERROR: No se encontró API_FOOTBALL_KEY en Secrets.")
     sys.exit(1)
 
 def get_data():
@@ -98,11 +98,9 @@ print(f"ROI promedio: {np.mean(rois)*100:.2f}%")
 os.makedirs('models', exist_ok=True)
 os.makedirs('data', exist_ok=True)
 
-if np.mean(rois) > 0.02 or not os.path.exists('models/xg_model.pkl'):
-    model = XGBClassifier(n_estimators=200, max_depth=3, learning_rate=0.1, random_state=42, eval_metric='mlogloss')
-    model.fit(X, y)
-    joblib.dump(model, 'models/xg_model.pkl')
-    df.to_csv('data/historico.csv', index=False)
-    print("Modelo guardado.")
-else:
-    print("Modelo descartado. ROI < 2%")
+# Para 2026 quito el filtro de ROI porque hay pocos datos
+model = XGBClassifier(n_estimators=200, max_depth=3, learning_rate=0.1, random_state=42, eval_metric='mlogloss')
+model.fit(X, y)
+joblib.dump(model, 'models/xg_model.pkl')
+df.to_csv('data/historico.csv', index=False)
+print("Modelo guardado con season 2026.")
