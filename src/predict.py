@@ -1,14 +1,15 @@
 import pandas as pd, requests, joblib, os, numpy as np, sys
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262
-PREDICT_SEASON = 2026 # Clausura 2026. Cambia aquí si es Apertura
+PREDICT_SEASON = 2026 # Clausura 2026
 MODEL_PATH = 'models/xg_model.pkl'
 DATA_PATH = 'data/historico.csv'
 
 os.makedirs('predictions', exist_ok=True)
-today = datetime.utcnow().strftime('%Y-%m-%d')
+today = datetime.now(ZoneInfo("America/Mexico_City")).strftime('%Y-%m-%d')
 
 if not API_KEY:
     with open('predictions/hoy.md', 'w') as f:
@@ -19,13 +20,11 @@ if not os.path.exists(MODEL_PATH) or not os.path.exists(DATA_PATH):
     with open('predictions/hoy.md', 'w') as f:
         f.write(f"# Picks Liga MX - {today}\n\n")
         f.write("Sin modelo entrenado. Corre el workflow Train primero.\n")
-    print("No hay modelo o datos. Corre Train primero.")
     sys.exit(0)
 
 model = joblib.load(MODEL_PATH)
 df_hist = pd.read_csv(DATA_PATH)
 
-# Liga MX Clausura 2026 usa season=2026
 url = f"https://v3.football.api-sports.io/fixtures?league={LEAGUE_ID}&season={PREDICT_SEASON}&date={today}"
 print(f"Consultando fixtures de hoy: {url}")
 r = requests.get(url, headers={"x-apisports-key": API_KEY})
