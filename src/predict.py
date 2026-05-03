@@ -2,7 +2,7 @@ import pandas as pd, requests, joblib, os, numpy as np, sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-API_KEY = os.getenv('API_FOOTBALL_KEY')
+API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262
 PREDICT_SEASON = 2026 # Clausura 2026
 MODEL_PATH = 'models/xg_model.pkl'
@@ -13,7 +13,7 @@ today = datetime.now(ZoneInfo("America/Mexico_City")).strftime('%Y-%m-%d')
 
 if not API_KEY:
     with open('predictions/hoy.md', 'w') as f:
-        f.write(f"# Error\nNo se encontró API_FOOTBALL_KEY en Secrets.\n")
+        f.write(f"# Error\nNo se encontró API_KEY en Secrets.\n")
     sys.exit(1)
 
 if not os.path.exists(MODEL_PATH) or not os.path.exists(DATA_PATH):
