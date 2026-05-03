@@ -4,12 +4,12 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import log_loss
 
-API_KEY = os.getenv('API_FOOTBALL_KEY')
+API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262 # Liga MX
-TRAIN_SEASONS = [2026] # SOLO Clausura 2026
+TRAIN_SEASONS = # SOLO Clausura 2026
 
 if not API_KEY:
-    print("ERROR: No se encontró API_FOOTBALL_KEY en Secrets.")
+    print("ERROR: No se encontró API_KEY en Secrets.")
     sys.exit(1)
 
 def get_data():
@@ -98,7 +98,6 @@ print(f"ROI promedio: {np.mean(rois)*100:.2f}%")
 os.makedirs('models', exist_ok=True)
 os.makedirs('data', exist_ok=True)
 
-# Para 2026 quito el filtro de ROI porque hay pocos datos
 model = XGBClassifier(n_estimators=200, max_depth=3, learning_rate=0.1, random_state=42, eval_metric='mlogloss')
 model.fit(X, y)
 joblib.dump(model, 'models/xg_model.pkl')
