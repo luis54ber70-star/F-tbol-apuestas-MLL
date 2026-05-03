@@ -73,7 +73,7 @@ for f in fixtures:
 
 with open('predictions/hoy.md', 'w') as f:
     f.write(f"# Picks Liga MX - {today}\n\n")
-    f.write("Modelo: XGBoost entrenado con datos históricos | Kelly 25% | Umbral 52%\n\n")
+    f.write("Modelo: XGBoost entrenado con season 2024 | Kelly 25% | Umbral 52%\n\n")
     if picks:
         for p in picks: f.write(f"- {p}\n")
     else:
