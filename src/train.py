@@ -6,7 +6,7 @@ from sklearn.metrics import log_loss
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262 # Liga MX
-TRAIN_SEASONS = [2024, 2025] # Apertura 2024 + Clausura 2025
+TRAIN_SEASONS = [2024] # Apertura 2024. Agrega 2026 después de que termine Clausura
 
 if not API_KEY:
     print("ERROR: No se encontró API_KEY. Configura API_KEY en Secrets.")
