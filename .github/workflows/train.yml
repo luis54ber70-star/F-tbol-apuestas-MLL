@@ -2,7 +2,7 @@ name: Auto-Train
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '0 15 * * *' # 15:00 UTC = 9:00am CDMX
   workflow_dispatch:
 
 jobs:
@@ -37,5 +37,5 @@ jobs:
           git config user.email actions@github.com
           mkdir -p models data
           git add models/ data/ || true
-          git diff --staged --quiet || git commit -m "Auto-retrain $(date -u +'%Y-%m-%d')"
+          git diff --staged --quiet || git commit -m "Auto-retrain $(TZ=America/Mexico_City date +'%Y-%m-%d')"
           git push || echo "No changes to push"
