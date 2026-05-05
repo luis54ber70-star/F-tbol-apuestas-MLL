@@ -1,5 +1,5 @@
-# Picks Liga MX - 2026-05-02
+# Picks Liga MX - 2026-05-05
 
 No hay partidos de Liga MX programados para hoy.
 
-Modelo entrenado con 320 partidos históricos.
+Modelo entrenado con season 2024: 320 partidos históricos.
