@@ -6,7 +6,7 @@ from sklearn.metrics import log_loss
 
 API_KEY = os.getenv('API_KEY')
 LEAGUE_ID = 262 # Liga MX
-TRAIN_SEASONS = [2026] # SOLO Clausura 2026
+TRAIN_SEASONS = # Apertura 2024 + lo que lleve Clausura 2026
 
 if not API_KEY:
     print("ERROR: No se encontró API_KEY en Secrets.")
@@ -102,4 +102,4 @@ model = XGBClassifier(n_estimators=200, max_depth=3, learning_rate=0.1, random_s
 model.fit(X, y)
 joblib.dump(model, 'models/xg_model.pkl')
 df.to_csv('data/historico.csv', index=False)
-print("Modelo guardado con season 2026.")
+print("Modelo guardado con seasons 2024 + 2026.")
