@@ -1,4 +1,4 @@
-# Picks Liga MX - 2026-08-20
+# Picks Liga MX - 2026-08-21
 
 No hay partidos de Liga MX programados para hoy.
 
