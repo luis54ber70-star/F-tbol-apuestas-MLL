@@ -1,4 +1,4 @@
-# Picks Liga MX - 2026-11-27
+# Picks Liga MX - 2026-11-28
 
 No hay partidos de Liga MX programados para hoy.
 
